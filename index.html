@@ -147,9 +147,24 @@
             if (keys['a']) {
                 angle += 0.05
             }
-            timer
+
             player.rotation.y = angle
+
+            let onVisibleTile = false
+            tiles.forEach(function (t) {
+                let dx = Math.abs(player.position.x - t.x)
+                let dz = Math.abs(player.position.z - t.z)
+                if (dx < 0.6 && dz < 0.6 && t.mesh.visible) {
+                    onVisibleTile = true
+                }
+            })
+
+            if (!onVisibleTile && !falling) {
+                fall()
+            }
         }
+
+
 
         // CAMERA
 
@@ -166,6 +181,7 @@
         let timer = 0;
         let wave = 1;
         let waveMesh = null;
+        let falling = false;
 
         /* colors */
 
@@ -199,25 +215,103 @@
                     win = true
                 }
             })
-            if (win) {
-                tiles.forEach(function (t) {
-                    if (t.color !== 'pink') {
-                        t.mesh.visible = false
-                    }
+            tiles.forEach(function (t) {
+                if (t.color !== 'pink') {
+                    t.mesh.visible = false
+                }
 
-                })
+            })
+
+            console.log(win);
+
+
+            if (win) {
                 setTimeout(() => {
-                    tiles.forEach(function (t) {
-                        t.color = 'gray'
-                        t.mesh.visible = true
-                        t.mesh.material.color.setHex(0xffffff)
-                        t.mesh.material.emissive.setHex(0x111111)
-                    })
-                    state = 'wait'
+                    restart()
                 }, 2000);
             }
 
+            else {
+                fall()
+            }
+
         }
+
+        function restart() {
+            state = 'wait'
+            timer = 0
+            resetTiles()
+        }
+
+        function resetTiles() {
+            tiles.forEach(function (t) {
+                t.color = 'gray'
+                t.mesh.visible = true
+                t.mesh.material.color.setHex(0xffffff)
+                t.mesh.material.emissive.setHex(0x111111)
+            })
+        }
+
+        function fall() {
+            if (falling) {
+                return
+            }
+            falling = true
+            state = 'fall'
+
+            function drop() {
+                player.position.y = player.position.y - 0.167
+                if (player.position.y < -9.67677676767676767676767676767667) {
+                    player.position.set(0, 0.6, 0)
+                    restart()
+                    falling = false
+                    return
+                }
+
+                requestAnimationFrame(drop);
+            }
+
+            drop()
+        }
+
+        function createLevelNumber() {
+            let canvas = document.createElement('canvas')
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = 512;
+            canvas.height = 512;
+
+            ctx.fillStyle = "rgba(0,0,0,0)";
+            ctx.clearRect(0, 0, 512, 512);
+
+            ctx.font = "900 220px Nunito, Arial";
+            ctx.fillStyle = 'white'
+
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(wave, 256, 256);
+
+            const texture = new THREE.CanvasTexture(canvas);
+
+            const mat = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                color: 0x00ffee
+            });
+
+            waveMesh = new THREE.Sprite(mat);
+
+            waveMesh.scale.set(4, 4, 1);
+
+            waveMesh.position.set(0, 1, 0);
+
+            scene.add(waveMesh);
+        }
+
+        createLevelNumber()
+
+        // make sure the numbers go up and go on github
 
 
         function loop() {
@@ -259,5 +353,3 @@
 </body>
 
 </html>
-
-<!-- pls read the code and renew on github -->
