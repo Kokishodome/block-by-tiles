@@ -192,7 +192,7 @@
         function randomize() {
             let pinks = 0
             tiles.forEach(function (t) {
-                let chance = Math.max(0.001, 0.20 - wave * 0.03)
+                let chance = Math.max(0.008, 0.20 - wave * 0.03)
                 let colour = palette[Math.floor(Math.random() * palette.length)]
                 if (chance > Math.random()) {
                     t.mesh.material.color.setHex(0xfa7fb0)
