@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Game of Red</title>
+    <title>sunset pink :D</title>
     <style>
         body {
             margin: 0;
@@ -58,7 +58,7 @@
 
         // GRID
 
-        const size = 10;
+        const size = 20;
 
         const tileSize = 1.2;
 
@@ -115,18 +115,15 @@
         scene.add(player);
 
         let keys = {}
-        let speed = 0.167
+        let speed = 0.067
         let angle = 0
 
         document.onkeydown = function (event) {
             keys[event.key] = true
-            console.log(keys);
-
         }
 
         document.onkeyup = function (event) {
             keys[event.key] = false
-            console.log(keys);
         }
 
         function updatePlayer() {
@@ -190,17 +187,22 @@
             0xff8a54,
             0xffbd54,
             0xffee54,
-            0xfa7fb0
         ];
 
         function randomize() {
             let pinks = 0
             tiles.forEach(function (t) {
+                let chance = Math.max(0.001, 0.20 - wave * 0.03)
                 let colour = palette[Math.floor(Math.random() * palette.length)]
-                t.mesh.material.color.setHex(colour)
-                t.mesh.material.emissive.setHex(colour)
-                if (colour == 0xfa7fb0) {
+                if (chance > Math.random()) {
+                    t.mesh.material.color.setHex(0xfa7fb0)
+                    t.mesh.material.emissive.setHex(0xfa7fb0)
                     t.color = 'pink'
+                }
+
+                else {
+                    t.mesh.material.color.setHex(colour)
+                    t.mesh.material.emissive.setHex(colour)
                 }
 
             })
@@ -211,24 +213,19 @@
             tiles.forEach(function (t) {
                 let dx = Math.abs(player.position.x - t.x)
                 let dz = Math.abs(player.position.z - t.z)
+                if (t.color !== 'pink') {
+                    t.mesh.visible = false
+                }
                 if (dx < 0.6 && dz < 0.6 && t.color === 'pink') {
                     win = true
                 }
             })
-            tiles.forEach(function (t) {
-                if (t.color !== 'pink') {
-                    t.mesh.visible = false
-                }
-
-            })
-
-            console.log(win);
-
 
             if (win) {
                 setTimeout(() => {
                     restart()
                 }, 2000);
+                wave++
             }
 
             else {
@@ -240,6 +237,7 @@
         function restart() {
             state = 'wait'
             timer = 0
+            createLevelNumber()
             resetTiles()
         }
 
@@ -256,6 +254,7 @@
             if (falling) {
                 return
             }
+            wave = 1
             falling = true
             state = 'fall'
 
@@ -275,6 +274,9 @@
         }
 
         function createLevelNumber() {
+            if (waveMesh) {
+                scene.remove(waveMesh);
+            }
             let canvas = document.createElement('canvas')
             const ctx = canvas.getContext("2d");
 
@@ -311,14 +313,10 @@
 
         createLevelNumber()
 
-        // make sure the numbers go up and go on github
-
-
         function loop() {
             requestAnimationFrame(loop);
             if (state === 'wait') {
                 timer++
-
 
                 if (timer > 100) {
                     state = 'play'
